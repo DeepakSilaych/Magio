@@ -1,0 +1,12 @@
+{
+  "name": "magio",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm run dev --prefix apps/web",
+    "dev:ext": "cd apps/extension && pnpm dev",
+    "db:push": "npm run db:push --prefix apps/web",
+    "db:studio": "npx prisma studio --schema apps/web/prisma/schema.prisma",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  }
+}

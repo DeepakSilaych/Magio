@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Email {
+  id        String    @id @default(cuid())
+  subject   String
+  recipient String
+  sender    String
+  senderIp  String?
+  createdAt DateTime  @default(now())
+  views     ViewLog[]
+}
+
+model ViewLog {
+  id        String   @id @default(cuid())
+  emailId   String
+  email     Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  viewedAt  DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+}
