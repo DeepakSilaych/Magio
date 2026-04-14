@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="MailTrack Logo" width="120" />
+  <img src="assets/logo.svg" alt="Magio Logo" width="120" />
 </p>
 
 <h1 align="center">Magio</h1>
