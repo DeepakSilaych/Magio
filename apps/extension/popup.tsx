@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react"
+import { getTrackingEnabled, setTrackingEnabled, initStorageListener } from "./lib/storage"
 
 function IndexPopup() {
   const [enabled, setEnabled] = useState(true)
 
   useEffect(() => {
-    const val = localStorage.getItem('magio_enabled')
-    setEnabled(val === null ? true : val === 'true')
+    getTrackingEnabled().then(setEnabled)
+    initStorageListener(setEnabled)
   }, [])
 
   const toggle = () => {
     const next = !enabled
     setEnabled(next)
-    localStorage.setItem('magio_enabled', String(next))
+    setTrackingEnabled(next)
   }
 
   return (

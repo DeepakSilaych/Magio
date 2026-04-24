@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbConnector } from '@/lib/db/connector';
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204 });
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

@@ -28,6 +28,16 @@ export const dbConnector = {
     });
   },
 
+  async getEmailStatuses() {
+    return prisma.email.findMany({
+      select: {
+        subject: true,
+        _count: { select: { views: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  },
+
   async logEmailView(emailId: string, ipAddress?: string, userAgent?: string) {
     return prisma.viewLog.create({
       data: { emailId, ipAddress, userAgent },

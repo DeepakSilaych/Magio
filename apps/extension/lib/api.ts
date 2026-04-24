@@ -1,6 +1,6 @@
 const API_BASE_URL = process.env.PLASMO_PUBLIC_API_URL || 'http://localhost:3000';
 
-const HEADERS = {
+const POST_HEADERS = {
   'Content-Type': 'application/json',
   'ngrok-skip-browser-warning': 'true',
   'X-Pinggy-No-Screen': 'true',
@@ -11,7 +11,7 @@ export async function registerEmail(subject: string, recipient: string, sender: 
   try {
     const res = await fetch(`${API_BASE_URL}/api/emails`, {
       method: 'POST',
-      headers: HEADERS,
+      headers: POST_HEADERS,
       body: JSON.stringify({ subject, recipient, sender }),
     });
     if (res.ok) return res.json();
@@ -39,12 +39,23 @@ export type TrackingData = {
 
 export async function fetchTrackingData(subject: string): Promise<TrackingData | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/emails/search?subject=${encodeURIComponent(subject)}`, {
-      headers: HEADERS,
-    });
+    const res = await fetch(`${API_BASE_URL}/api/emails/search?subject=${encodeURIComponent(subject)}`);
     if (!res.ok) return null;
     return res.json();
   } catch {
     return null;
+  }
+}
+
+export type EmailStatus = { subject: string; viewCount: number };
+
+export async function fetchAllTrackingStatuses(): Promise<EmailStatus[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/emails`);
+    if (!res.ok) return [];
+    const emails: { subject: string; views: unknown[] }[] = await res.json();
+    return emails.map((e) => ({ subject: e.subject, viewCount: e.views.length }));
+  } catch {
+    return [];
   }
 }

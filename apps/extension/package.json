@@ -24,8 +24,12 @@
     "typescript": "5.3.3"
   },
   "manifest": {
+    "permissions": [
+      "storage"
+    ],
     "host_permissions": [
       "http://localhost:3000/*",
+      "https://magio.deepaksilaych.me/*",
       "https://*.ngrok-free.app/*",
       "https://*.run.pinggy-free.link/*",
       "https://*.trycloudflare.com/*",

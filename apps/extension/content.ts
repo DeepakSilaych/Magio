@@ -1,12 +1,13 @@
 import type { PlasmoCSConfig } from 'plasmo';
-import { getTrackingEnabled, setTrackingEnabled } from './lib/storage';
+import { getTrackingEnabledSync, setTrackingEnabled, initStorageListener, loadInitialState } from './lib/storage';
 import { registerEmail, getPixelUrl } from './lib/api';
 import { getComposeWindows, getComposeBody, getComposeToolbar, getSubject, getRecipient, getSender, getSendButton, getOpenEmailSubject, isInEmailView } from './lib/gmail';
 import { renderSidebar, removeSidebar } from './lib/sidebar';
+import { processListIcons, invalidateListIconCache } from './lib/listIcons';
 
 export const config: PlasmoCSConfig = {
   matches: ['https://mail.google.com/*'],
-  all_frames: true,
+  all_frames: false,
   run_at: 'document_idle',
 };
 
@@ -14,7 +15,7 @@ const BUTTON_ID = 'magio-toggle';
 const INJECTED_ATTR = 'data-magio-injected';
 
 function createToggleButton(): HTMLElement {
-  const enabled = getTrackingEnabled();
+  const enabled = getTrackingEnabledSync();
 
   const wrapper = document.createElement('div');
   wrapper.id = BUTTON_ID;
@@ -38,7 +39,7 @@ function createToggleButton(): HTMLElement {
 
   wrapper.addEventListener('click', (e) => {
     e.stopPropagation();
-    const next = !getTrackingEnabled();
+    const next = !getTrackingEnabledSync();
     setTrackingEnabled(next);
     render(next);
   });
@@ -46,11 +47,13 @@ function createToggleButton(): HTMLElement {
   wrapper.addEventListener('mouseenter', () => { wrapper.style.opacity = '0.8'; });
   wrapper.addEventListener('mouseleave', () => { wrapper.style.opacity = '1'; });
 
+  initStorageListener((on) => render(on));
+
   return wrapper;
 }
 
 async function injectPixelBeforeSend(composeWindow: Element) {
-  if (!getTrackingEnabled()) return;
+  if (!getTrackingEnabledSync()) return;
 
   const body = getComposeBody(composeWindow);
   if (!body) return;
@@ -105,11 +108,36 @@ function processEmailView() {
   renderSidebar(subject);
 }
 
-const observer = new MutationObserver(() => {
+function cleanupStaleStyles() {
+  document.body.removeAttribute('data-magio-margin');
+  if (document.body.style.marginRight) {
+    document.body.style.marginRight = '';
+  }
+}
+
+async function init() {
+  cleanupStaleStyles();
+  await loadInitialState();
+
+  const observer = new MutationObserver(() => {
+    processComposeWindows();
+    processEmailView();
+    processListIcons();
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+  window.addEventListener('hashchange', () => {
+    lastEmailSubject = null;
+    invalidateListIconCache();
+    processEmailView();
+    processListIcons();
+  });
+
+  initStorageListener(() => processListIcons());
+
   processComposeWindows();
   processEmailView();
-});
+  processListIcons();
+}
 
-observer.observe(document.body, { childList: true, subtree: true });
-processComposeWindows();
-processEmailView();
+init();
