@@ -212,9 +212,18 @@ export async function renderSidebar(subject: string) {
   const isOwnerView = openEmailSender && currentAccount && openEmailSender === currentAccount;
 
   if (isOwnerView) {
-    await wait(700);
-    if (token !== renderToken) return;
-    await deleteLatestTrackingView(data.id);
+    // Delete the owner's view. Google Image Proxy might delay the pixel request,
+    // so we attempt to delete it multiple times to ensure it's removed.
+    const cleanupOwnerViews = async () => {
+      for (const delay of [700, 2000, 4000]) {
+        await wait(delay);
+        if (token !== renderToken) return;
+        await deleteLatestTrackingView(data.id);
+      }
+    };
+    cleanupOwnerViews(); // Fire and forget
+
+    await wait(1000); // Initial wait before refetching for UI
     if (token !== renderToken) return;
     data = await fetchTrackingData(subject);
     if (token !== renderToken) return;
