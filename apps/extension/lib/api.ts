@@ -30,6 +30,7 @@ export function getPixelUrl(emailId: string): string {
 export type TrackingData = {
   id: string;
   subject: string;
+  sender: string;
   recipient: string;
   totalViews: number;
   uniqueIps: number;

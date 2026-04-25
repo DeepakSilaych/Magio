@@ -1,5 +1,5 @@
 import { deleteLatestTrackingView, fetchTrackingData, type TrackingData } from './api';
-import { getOpenEmailSender, getSender } from './gmail';
+import { getSender } from './gmail';
 
 const SIDEBAR_ID = 'magio-sidebar';
 const SIDEBAR_WIDTH = 320;
@@ -207,9 +207,8 @@ export async function renderSidebar(subject: string) {
   if (token !== renderToken) return;
   if (!data) return;
 
-  const openEmailSender = getOpenEmailSender();
   const currentAccount = getSender();
-  const isOwnerView = openEmailSender && currentAccount && openEmailSender === currentAccount;
+  const isOwnerView = data.sender === currentAccount;
 
   if (isOwnerView) {
     await wait(700);
