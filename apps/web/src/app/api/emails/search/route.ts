@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       id: email.id,
       subject: email.subject,
+      sender: email.sender,
       recipient: email.recipient,
       totalViews: email.views.length,
       uniqueIps: uniqueIps.size,
