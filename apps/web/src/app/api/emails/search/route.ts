@@ -29,6 +29,12 @@ export async function GET(request: NextRequest) {
         viewedAt: v.viewedAt,
         ipAddress: v.ipAddress,
         userAgent: v.userAgent,
+        city: v.city,
+        region: v.region,
+        country: v.country,
+        browser: v.browser,
+        os: v.os,
+        device: v.device,
       })),
     });
   } catch (error) {

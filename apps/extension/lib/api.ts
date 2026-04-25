@@ -34,7 +34,17 @@ export type TrackingData = {
   totalViews: number;
   uniqueIps: number;
   lastView: string | null;
-  views: { viewedAt: string; ipAddress: string | null; userAgent: string | null }[];
+  views: {
+    viewedAt: string;
+    ipAddress: string | null;
+    userAgent: string | null;
+    city?: string | null;
+    region?: string | null;
+    country?: string | null;
+    browser?: string | null;
+    os?: string | null;
+    device?: string | null;
+  }[];
 };
 
 export async function fetchTrackingData(subject: string): Promise<TrackingData | null> {
@@ -44,6 +54,15 @@ export async function fetchTrackingData(subject: string): Promise<TrackingData |
     return res.json();
   } catch {
     return null;
+  }
+}
+
+export async function deleteLatestTrackingView(emailId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/emails/${emailId}/views/latest`, { method: 'DELETE' });
+    return res.ok;
+  } catch {
+    return false;
   }
 }
 

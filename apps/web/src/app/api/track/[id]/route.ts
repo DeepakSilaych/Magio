@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbConnector } from '@/lib/db/connector';
+import { getViewDetails } from '@/lib/tracking/view-details';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,11 +32,18 @@ export async function GET(
     const email = await dbConnector.getEmailById(cleanId);
 
     const isSenderView = email?.senderIp && email.senderIp === ipAddress;
+    const isImmediateOpen = email && Date.now() - email.createdAt.getTime() < 5 * 60_000;
 
-    if (!isSenderView) {
-      dbConnector.logEmailView(cleanId, ipAddress, userAgent).catch((err) => {
-        console.error('Failed to log email view:', err);
-      });
+    if (email && !isSenderView && !isImmediateOpen) {
+      getViewDetails(ipAddress, userAgent)
+        .then((details) => dbConnector.logEmailView(cleanId, {
+          ipAddress,
+          userAgent,
+          ...details,
+        }))
+        .catch((err) => {
+          console.error('Failed to log email view:', err);
+        });
     }
 
     return new NextResponse(PIXEL, { headers: PIXEL_RESPONSE_HEADERS });

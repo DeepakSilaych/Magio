@@ -38,9 +38,30 @@ export const dbConnector = {
     });
   },
 
-  async logEmailView(emailId: string, ipAddress?: string, userAgent?: string) {
+  async logEmailView(
+    emailId: string,
+    data: {
+      ipAddress?: string;
+      userAgent?: string;
+      city?: string;
+      region?: string;
+      country?: string;
+      browser?: string;
+      os?: string;
+      device?: string;
+    }
+  ) {
     return prisma.viewLog.create({
-      data: { emailId, ipAddress, userAgent },
+      data: { emailId, ...data },
+    });
+  },
+
+  async deleteRecentViews(emailId: string, since: Date) {
+    return prisma.viewLog.deleteMany({
+      where: {
+        emailId,
+        viewedAt: { gte: since },
+      },
     });
   },
 };

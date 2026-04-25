@@ -89,21 +89,22 @@ export function getRecipient(composeWindow: Element): string {
 }
 
 export function getSender(): string {
+  const fromSelect = document.querySelector<HTMLSelectElement>('select[aria-label*="From"]');
+  if (fromSelect?.value) return fromSelect.value;
+
+  const account = document.querySelector<HTMLMetaElement>('meta[name="og-profile-acct"]')?.content;
+  if (account && account.includes('@')) return account;
+
   const selectors = [
     'span[data-hovercard-id]',
     'span[data-hovercard-owner-id]',
-    'meta[name="og-profile-acct"]',
   ];
   for (const sel of selectors) {
     const el = document.querySelector(sel);
     const val = el?.getAttribute('data-hovercard-id')
-      || el?.getAttribute('data-hovercard-owner-id')
-      || el?.getAttribute('content');
+      || el?.getAttribute('data-hovercard-owner-id');
     if (val && val.includes('@')) return val;
   }
-
-  const fromSelect = document.querySelector<HTMLSelectElement>('select[aria-label*="From"]');
-  if (fromSelect?.value) return fromSelect.value;
 
   return 'unknown@gmail.com';
 }
@@ -133,6 +134,20 @@ export function getOpenEmailSubject(): string | null {
     const el = document.querySelector(sel);
     const text = el?.textContent?.trim();
     if (text) return text;
+  }
+  return null;
+}
+
+export function getOpenEmailSender(): string | null {
+  const selectors = [
+    'div[role="main"] span[email][data-hovercard-id]',
+    'div[role="main"] span[email]',
+    'div[role="main"] [data-hovercard-id]',
+  ];
+  for (const sel of selectors) {
+    const el = document.querySelector<HTMLElement>(sel);
+    const email = el?.getAttribute('email') || el?.getAttribute('data-hovercard-id');
+    if (email && email.includes('@')) return email;
   }
   return null;
 }
