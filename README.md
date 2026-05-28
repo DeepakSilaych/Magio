@@ -9,12 +9,27 @@
 </p>
 
 <p align="center">
-  <a href="#-getting-started">Getting Started</a> •
+  <a href="#install-the-extension">Install</a> •
+  <a href="#-getting-started">Self-host</a> •
   <a href="#-installing-with-docker">Docker</a> •
   <a href="#-features">Features</a> •
   <a href="#-api-reference">API</a> •
   <a href="LICENSE">License</a>
 </p>
+
+---
+
+## Install the extension
+
+Pre-built extension bundles for Chrome / Brave / Edge / any Chromium browser are attached to every [Release](https://github.com/DeepakSilaych/Magio/releases). They target the hosted backend at `magio.deepaksilaych.me` (auth-gated).
+
+1. Download `magio-extension-chrome.zip` from the latest release and unzip it.
+2. Open `chrome://extensions` and toggle **Developer mode** on.
+3. Click **Load unpacked** → select the unzipped folder.
+4. Visit [magio.deepaksilaych.me](https://magio.deepaksilaych.me) once and sign in. The auth cookie persists for a week and is reused by the extension.
+5. Open Gmail. The Magio eye-icon will appear next to Gmail's Send button.
+
+**Want to point the extension at your own backend?** Build from source with a custom `PLASMO_PUBLIC_API_URL` — see [Self-host](#-getting-started) below.
 
 ---
 

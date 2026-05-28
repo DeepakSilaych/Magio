@@ -1,0 +1,87 @@
+name: Build extension
+
+# Builds the Plasmo Chrome extension and attaches the unpacked zip to a GitHub
+# Release. No Chrome Web Store account is needed — users "Load unpacked" from
+# the release zip per the README install steps.
+#
+# Triggers:
+#   - Push of a tag matching `ext-v*` (release path)
+#   - Manual dispatch (build-only path, useful for testing a backend URL)
+#
+# Build-time env: PLASMO_PUBLIC_API_URL bakes the backend into the bundle.
+# Default = https://magio.deepaksilaych.me (the hosted, auth-gated dashboard).
+
+on:
+  push:
+    tags:
+      - 'ext-v*'
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'Backend URL to bake into the build'
+        default: 'https://magio.deepaksilaych.me'
+        required: true
+
+permissions:
+  contents: write  # needed for softprops/action-gh-release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/extension
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: apps/extension/pnpm-lock.yaml
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (Chrome MV3)
+        env:
+          PLASMO_PUBLIC_API_URL: ${{ github.event.inputs.api_url || 'https://magio.deepaksilaych.me' }}
+        run: pnpm build
+
+      - name: Package
+        run: |
+          cd build
+          ls
+          # Plasmo outputs to build/chrome-mv3-prod
+          zip -r ../magio-extension-chrome.zip chrome-mv3-prod
+
+      - name: Upload artifact (always)
+        uses: actions/upload-artifact@v4
+        with:
+          name: magio-extension-chrome
+          path: apps/extension/magio-extension-chrome.zip
+          retention-days: 30
+
+      - name: Create GitHub release (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/ext-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/extension/magio-extension-chrome.zip
+          name: Extension ${{ github.ref_name }}
+          body: |
+            Drop-in build of the Magio Chrome extension, targeting **magio.deepaksilaych.me**.
+
+            ### Install
+
+            1. Download `magio-extension-chrome.zip` below and unzip.
+            2. Open `chrome://extensions` and enable **Developer mode**.
+            3. Click **Load unpacked** → pick the unzipped `chrome-mv3-prod` folder.
+            4. Visit [magio.deepaksilaych.me](https://magio.deepaksilaych.me), sign in once.
+            5. Open Gmail. The Magio toggle appears in the compose toolbar.
+
+            Bundle is built with `PLASMO_PUBLIC_API_URL=https://magio.deepaksilaych.me`.
+            To self-host with a different backend, see the [README](https://github.com/DeepakSilaych/Magio#-getting-started).
